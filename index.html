@@ -356,47 +356,48 @@
     }
     bindHover();
 
-    /* ── Content ── */
-    const posts = [
-      {
-        type: 'The Clip',
-        pillar: 'Sound',
-        region: 'Tuva, Russia',
-        title: 'One Throat, <em>Two Notes</em>',
-        lede: 'Tuvan throat singers produce two distinct pitches simultaneously — a low drone and a high whistling melody — from a single human voice.',
-        videoId: 'R2ovoRyv4kw',
-        note: 'Huun-Huur-Tu performing live — one of Tuva\'s most celebrated ensembles.'
-      },
-      {
-        type: 'The Clip',
-        pillar: 'Play',
-        region: 'Southeast Asia',
-        title: 'Sepak Takraw — <em>The Impossible Sport</em>',
-        lede: 'Volleyball crossed with acrobatic martial arts. The spike is an overhead bicycle kick performed mid-air. It is a real sport played at Olympic level.',
-        videoId: 'AA1OYsPugV0',
-        note: 'Professional Sepak Takraw — watch the overhead kick at full speed.'
-      },
-      {
-        type: 'The Clip',
-        pillar: 'Believe',
-        region: 'Rajasthan, India',
-        title: 'The Sound of <em>Manganiyar</em>',
-        lede: 'The Manganiyar are a hereditary community of Muslim musicians from the Thar Desert. They have been performing for Rajput patrons for centuries. Their music sounds like it was made at the edge of the world.',
-        videoId: 'gWOuYAJ1-zI',
-        note: 'Recorded live — the khamaycha (bowed lute) and dholak in full conversation.'
-      },
-      {
-        type: 'The Clip',
-        pillar: 'Taste',
-        region: 'Ethiopia',
-        title: 'The Coffee Ceremony is <em>Not About Coffee</em>',
-        lede: 'Ethiopia gave the world coffee. But Jebena Buna — the ceremony built around it — is not about caffeine. It is about time, and who you choose to spend it with.',
-        videoId: 'TKT5MloFYcQ',
-        note: 'Three rounds. One to two hours. The third cup carries a blessing.'
-      }
-    ];
+    /* ── Config ── */
+    const SHEET_ID  = '1KW9ZMsuzqGctHmUVLBuerAbA5XU5nZ9z4LHgNxNh5n0';
+    const API_KEY   = 'AIzaSyAHfpMauIr_K3hQkXzN-a8hvFHx1SWY_Yg';
+    const SHEET_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1?key=${API_KEY}`;
 
-    let last = -1;
+    let posts = [];
+    let last  = -1;
+
+    /* ── Fetch posts from Google Sheets ── */
+    async function loadPosts() {
+      try {
+        const res  = await fetch(SHEET_URL);
+        const data = await res.json();
+        const rows = data.values;
+
+        if (!rows || rows.length < 2) {
+          console.error('No content found in sheet');
+          return;
+        }
+
+        // First row is headers
+        const headers = rows[0];
+        posts = rows.slice(1).map(row => {
+          const obj = {};
+          headers.forEach((h, i) => obj[h.trim()] = (row[i] || '').trim());
+          return obj;
+        }).filter(p => p.videoId); // only rows with a videoId
+
+      } catch (err) {
+        console.error('Failed to load sheet:', err);
+        // Fallback to hardcoded posts if sheet fails
+        posts = [
+          {
+            type: 'The Clip', pillar: 'Sound', region: 'Tuva, Russia',
+            title: 'One Throat, Two Notes',
+            lede: 'Tuvan throat singers produce two distinct pitches simultaneously from a single human voice.',
+            videoId: 'R2ovoRyv4kw',
+            note: 'Huun-Huur-Tu performing live.'
+          }
+        ];
+      }
+    }
 
     function buildPost(p) {
       return `
@@ -427,6 +428,7 @@
     }
 
     function goSomewhere() {
+      if (!posts.length) return;
       const loading = document.getElementById('loading');
       loading.classList.add('on');
 
@@ -436,9 +438,9 @@
         last = i;
         const p = posts[i];
 
-        document.getElementById('postPillar').textContent  = p.pillar;
-        document.getElementById('postRegion').textContent  = p.region;
-        document.getElementById('postContent').innerHTML   = buildPost(p);
+        document.getElementById('postPillar').textContent = p.pillar;
+        document.getElementById('postRegion').textContent = p.region;
+        document.getElementById('postContent').innerHTML  = buildPost(p);
         document.getElementById('post').scrollTop = 0;
 
         bindHover();
@@ -450,7 +452,6 @@
     }
 
     function goHome() {
-      // Clear iframe to stop video playing in background
       document.getElementById('postContent').innerHTML = '';
       document.getElementById('post').classList.remove('in');
       document.getElementById('home').classList.remove('out');
@@ -471,6 +472,9 @@
 
     document.getElementById('backBtn').addEventListener('click', goHome);
     document.getElementById('navAgainBtn').addEventListener('click', goSomewhere);
+
+    /* ── Init — load sheet then ready ── */
+    loadPosts();
   </script>
 </body>
 </html>
