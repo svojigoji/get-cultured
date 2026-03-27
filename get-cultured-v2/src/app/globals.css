@@ -1,0 +1,153 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── Aged Paper Design System ─────────────────────────────────── */
+
+:root {
+  /* Paper palette */
+  --paper:       #DDD0B4;
+  --paper-light: #E8DCC5;
+  --paper-dark:  #C2B090;
+  --ink:         #17100A;
+  --ink-soft:    #362A1C;
+  --saddle:      #7A3B10;  /* saddle brown — labels, highlights */
+  --gold:        #8C6E2A;
+  --dust:        #A89070;
+
+  /* shadcn token layer — mapped to paper palette */
+  --background:        #DDD0B4;
+  --foreground:        #17100A;
+  --card:              #E8DCC5;
+  --card-foreground:   #17100A;
+  --popover:           #E8DCC5;
+  --popover-foreground:#17100A;
+  --primary:           #17100A;
+  --primary-foreground:#DDD0B4;
+  --secondary:         #C2B090;
+  --secondary-foreground:#17100A;
+  --muted:             #C2B090;
+  --muted-foreground:  #A89070;
+  --accent:            #E8DCC5;
+  --accent-foreground: #17100A;
+  --destructive:       oklch(0.577 0.245 27.325);
+  --border:            #C2B090;
+  --input:             #C2B090;
+  --ring:              #8C6E2A;
+  --radius:            0.125rem;
+
+  /* sidebar */
+  --sidebar:                   #E8DCC5;
+  --sidebar-foreground:        #17100A;
+  --sidebar-primary:           #17100A;
+  --sidebar-primary-foreground:#DDD0B4;
+  --sidebar-accent:            #DDD0B4;
+  --sidebar-accent-foreground: #17100A;
+  --sidebar-border:            #C2B090;
+  --sidebar-ring:              #8C6E2A;
+
+  /* chart tokens (unused but required by shadcn) */
+  --chart-1: #8C6E2A;
+  --chart-2: #7A3B10;
+  --chart-3: #A89070;
+  --chart-4: #C2B090;
+  --chart-5: #362A1C;
+}
+
+/* ─── Tailwind v4 theme mapping ─────────────────────────────────── */
+
+@theme inline {
+  /* Paper colours */
+  --color-paper:       var(--paper);
+  --color-paper-light: var(--paper-light);
+  --color-paper-dark:  var(--paper-dark);
+  --color-ink:         var(--ink);
+  --color-ink-soft:    var(--ink-soft);
+  --color-saddle:      var(--saddle);
+  --color-gold:        var(--gold);
+  --color-dust:        var(--dust);
+
+  /* shadcn tokens */
+  --color-background:          var(--background);
+  --color-foreground:          var(--foreground);
+  --color-card:                var(--card);
+  --color-card-foreground:     var(--card-foreground);
+  --color-popover:             var(--popover);
+  --color-popover-foreground:  var(--popover-foreground);
+  --color-primary:             var(--primary);
+  --color-primary-foreground:  var(--primary-foreground);
+  --color-secondary:           var(--secondary);
+  --color-secondary-foreground:var(--secondary-foreground);
+  --color-muted:               var(--muted);
+  --color-muted-foreground:    var(--muted-foreground);
+  --color-accent:              var(--accent);
+  --color-accent-foreground:   var(--accent-foreground);
+  --color-destructive:         var(--destructive);
+  --color-border:              var(--border);
+  --color-input:               var(--input);
+  --color-ring:                var(--ring);
+  --color-chart-1:             var(--chart-1);
+  --color-chart-2:             var(--chart-2);
+  --color-chart-3:             var(--chart-3);
+  --color-chart-4:             var(--chart-4);
+  --color-chart-5:             var(--chart-5);
+  --color-sidebar:                    var(--sidebar);
+  --color-sidebar-foreground:         var(--sidebar-foreground);
+  --color-sidebar-primary:            var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:             var(--sidebar-accent);
+  --color-sidebar-accent-foreground:  var(--sidebar-accent-foreground);
+  --color-sidebar-border:             var(--sidebar-border);
+  --color-sidebar-ring:               var(--sidebar-ring);
+
+  /* radius scale */
+  --radius-sm:  calc(var(--radius) * 0.6);
+  --radius-md:  calc(var(--radius) * 0.8);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* font families */
+  --font-heading: var(--font-playfair);
+  --font-body:    var(--font-spectral);
+  --font-label:   var(--font-inconsolata);
+  --font-sans:    var(--font-spectral);
+  --font-serif:   var(--font-spectral);
+  --font-mono:    var(--font-inconsolata);
+}
+
+/* ─── Base typography ───────────────────────────────────────────── */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply h-full;
+    font-family: var(--font-spectral), Georgia, serif;
+  }
+
+  body {
+    @apply min-h-full bg-paper text-ink;
+    line-height: 1.75;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-playfair), 'Times New Roman', serif;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  /* All-caps labels, tags, nav */
+  .label {
+    font-family: var(--font-inconsolata), monospace;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+}
