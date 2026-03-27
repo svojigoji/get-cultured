@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get Cultured — Add Content</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Inconsolata:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --paper:       #DDD0B4;
+      --paper-light: #E8DCC5;
+      --paper-dark:  #C2B090;
+      --ink:         #17100A;
+      --ink-soft:    #362A1C;
+      --accent:      #7A3B10;
+      --gold:        #8C6E2A;
+      --dust:        #A89070;
+      --success:     #3A6B35;
+      --error:       #8B1A1A;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(ellipse 70% 50% at 12% 18%, rgba(80,50,10,0.07) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 70% at 88% 80%, rgba(80,50,10,0.07) 0%, transparent 65%);
+      font-family: 'Spectral', Georgia, serif;
+      color: var(--ink);
+      padding: 4rem 2rem 6rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      z-index: 0; pointer-events: none; opacity: 0.06;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .site-link {
+      font-family: 'Inconsolata', monospace;
+      font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--dust); text-decoration: none;
+      display: inline-block; margin-bottom: 3rem;
+      transition: color .2s;
+    }
+    .site-link:hover { color: var(--accent); }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 400; font-size: clamp(32px, 5vw, 48px);
+      line-height: 1.05; color: var(--ink); margin-bottom: 0.5rem;
+    }
+    h1 em { font-style: italic; color: var(--accent); }
+
+    .subtitle {
+      font-size: 16px; font-weight: 300; font-style: italic;
+      color: var(--ink-soft); margin-bottom: 3rem;
+    }
+
+    .divider { width: 100%; height: 1px; background: var(--paper-dark); margin-bottom: 2.5rem; }
+
+    .field { margin-bottom: 1.8rem; }
+
+    label {
+      display: block;
+      font-family: 'Inconsolata', monospace;
+      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 0.5rem;
+    }
+
+    .field-hint {
+      font-size: 13px; font-weight: 300; font-style: italic;
+      color: var(--dust); margin-bottom: 0.6rem;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      background: rgba(255,255,255,0.4);
+      border: 1.5px solid var(--paper-dark);
+      padding: 0.85rem 1rem;
+      font-family: 'Spectral', serif;
+      font-size: 15px; font-weight: 300;
+      color: var(--ink); outline: none;
+      transition: border-color .2s, background .2s;
+      appearance: none; border-radius: 0;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.65);
+    }
+    input::placeholder, textarea::placeholder { color: var(--dust); }
+    textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A89070' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem; cursor: pointer;
+    }
+
+    .url-row { display: flex; gap: 0.8rem; align-items: flex-start; }
+    .url-row input { flex: 1; }
+
+    .fetch-btn {
+      font-family: 'Inconsolata', monospace;
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--paper-light); background: var(--accent);
+      border: none; padding: 0.85rem 1.2rem;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: background .2s;
+    }
+    .fetch-btn:hover { background: var(--ink); }
+    .fetch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #previewWrap {
+      display: none; margin-top: 0.8rem;
+      position: relative; padding-bottom: 56.25%; height: 0;
+      background: var(--ink);
+    }
+    #previewWrap.show { display: block; }
+    #previewWrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+    .preview-label {
+      font-family: 'Inconsolata', monospace;
+      font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--dust); margin-top: 0.5rem; display: none;
+    }
+
+    #generatedPanel {
+      display: none;
+      background: rgba(255,255,255,0.25);
+      border: 1.5px solid var(--paper-dark);
+      padding: 1.8rem;
+      margin-bottom: 1.8rem;
+    }
+    #generatedPanel.show { display: block; }
+
+    .panel-label {
+      font-family: 'Inconsolata', monospace;
+      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 1.5rem;
+    }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+
+    .generating {
+      font-family: 'Inconsolata', monospace;
+      font-size: 12px; letter-spacing: 0.15em;
+      color: var(--dust); font-style: italic;
+      padding: 1rem 0; display: none;
+    }
+    .generating.show { display: block; }
+
+    .submit-btn {
+      font-family: 'Inconsolata', monospace;
+      font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--ink); background: transparent;
+      border: 1.5px solid var(--ink);
+      padding: 1rem 2.5rem;
+      display: inline-flex; align-items: center; gap: 0.8rem;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 var(--paper-dark);
+      transition: background .2s, color .2s, transform .2s, box-shadow .2s;
+      margin-top: 0.5rem;
+    }
+    .submit-btn:hover {
+      background: var(--ink); color: var(--paper-light);
+      transform: translate(-2px, -2px);
+      box-shadow: 5px 5px 0 var(--accent);
+    }
+    .submit-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+    #toast {
+      display: none; margin-top: 1.5rem;
+      padding: 1rem 1.2rem;
+      font-family: 'Inconsolata', monospace;
+      font-size: 12px; letter-spacing: 0.1em;
+      border-left: 3px solid var(--success);
+      background: rgba(58, 107, 53, 0.08);
+      color: var(--success);
+    }
+    #toast.error { border-color: var(--error); background: rgba(139,26,26,0.08); color: var(--error); }
+    #toast.show { display: block; }
+
+    .entries-title {
+      font-family: 'Inconsolata', monospace;
+      font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--dust); margin: 3rem 0 1rem; display: none;
+    }
+    .entry-list { list-style: none; }
+    .entry-item {
+      display: flex; align-items: baseline;
+      justify-content: space-between;
+      padding: 1rem 0; border-bottom: 1px solid var(--paper-dark); gap: 1rem;
+    }
+    .entry-info { flex: 1; }
+    .entry-title { font-size: 16px; font-weight: 400; color: var(--ink); margin-bottom: 0.2rem; }
+    .entry-meta {
+      font-family: 'Inconsolata', monospace;
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--dust);
+    }
+    .entry-id { font-family: 'Inconsolata', monospace; font-size: 11px; color: var(--gold); }
+
+    @media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <a href="index.html" class="site-link">← Get Cultured</a>
+
+  <h1>Add <em>Content</em></h1>
+  <p class="subtitle">Paste a YouTube link. Everything else is generated for you.</p>
+  <div class="divider"></div>
+
+  <div class="field">
+    <label>YouTube URL</label>
+    <p class="field-hint">Paste any YouTube link — the title, lede, and region will be written for you.</p>
+    <div class="url-row">
+      <input type="url" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." />
+      <button class="fetch-btn" id="fetchBtn">Generate →</button>
+    </div>
+    <div id="previewWrap"><iframe id="previewFrame" allowfullscreen></iframe></div>
+    <p class="preview-label" id="previewLabel">↑ Confirm this is the right video before adding</p>
+  </div>
+
+  <p class="generating" id="generatingMsg">Fetching video and generating content...</p>
+
+  <div id="generatedPanel">
+    <p class="panel-label">Generated — edit anything before adding</p>
+
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="title" />
+    </div>
+
+    <div class="field">
+      <label>Lede</label>
+      <textarea id="lede"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Curator Note</label>
+      <input type="text" id="note" />
+    </div>
+
+    <div class="two-col">
+      <div class="field">
+        <label>Pillar</label>
+        <select id="pillar">
+          <option value="">— Select —</option>
+          <option>Sound</option>
+          <option>Taste</option>
+          <option>Make</option>
+          <option>Believe</option>
+          <option>Play</option>
+          <option>Speak</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Format</label>
+        <select id="type">
+          <option value="The Clip">The Clip</option>
+          <option value="The Gem">The Gem</option>
+          <option value="The Stack">The Stack</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Region</label>
+      <input type="text" id="region" />
+    </div>
+
+    <button class="submit-btn" id="submitBtn">Add to Get Cultured →</button>
+    <div id="toast"></div>
+  </div>
+
+  <p class="entries-title" id="entriesTitle">Currently in the sheet</p>
+  <ul class="entry-list" id="entryList"></ul>
+
+</div>
+
+<script>
+  const SHEET_ID   = '1KW9ZMsuzqGctHmUVLBuerAbA5XU5nZ9z4LHgNxNh5n0';
+  const API_KEY    = 'AIzaSyAHfpMauIr_K3hQkXzN-a8hvFHx1SWY_Yg';
+
+  function extractId(url) {
+    const patterns = [/[?&]v=([^&#]+)/, /youtu\.be\/([^?&#]+)/, /embed\/([^?&#]+)/, /shorts\/([^?&#]+)/];
+    for (const p of patterns) { const m = url.match(p); if (m) return m[1]; }
+    return null;
+  }
+
+  function showPreview(id) {
+    document.getElementById('previewFrame').src = `https://www.youtube.com/embed/${id}`;
+    document.getElementById('previewWrap').classList.add('show');
+    document.getElementById('previewLabel').style.display = 'block';
+  }
+
+  function toast(msg, isError) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show' + (isError ? ' error' : '');
+    setTimeout(() => t.className = '', 6000);
+  }
+
+  async function fetchYouTubeMeta(videoId) {
+    const url  = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${API_KEY}`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (!data.items || !data.items.length) throw new Error('Video not found');
+    return data.items[0].snippet;
+  }
+
+  async function generateWithClaude(snippet) {
+    const prompt = `You are the content curator for "Get Cultured" — a site surfacing niche cultural discoveries from around the world through video.
+
+A video has been submitted with this YouTube metadata:
+Title: ${snippet.title}
+Description: ${snippet.description ? snippet.description.slice(0, 600) : 'No description'}
+Channel: ${snippet.channelTitle}
+
+Generate content for this post. Respond ONLY with a valid JSON object, no markdown, no backticks:
+
+{
+  "title": "A short evocative post title in Get Cultured style — rewrite the YouTube title, do not copy it verbatim. No HTML tags.",
+  "lede": "One or two sentences. Specific, curious, no fluff. This is all the viewer reads before watching.",
+  "note": "One short line about what to watch or listen for in the video.",
+  "pillar": "One of exactly: Sound, Taste, Make, Believe, Play, Speak",
+  "region": "The geographic region or country this content is from"
+}`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data  = await res.json();
+    const text  = data.content.map(b => b.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    return JSON.parse(clean);
+  }
+
+  document.getElementById('fetchBtn').addEventListener('click', async () => {
+    const url     = document.getElementById('youtubeUrl').value.trim();
+    const videoId = extractId(url);
+
+    if (!videoId) { alert('Could not find a YouTube video ID in that URL.'); return; }
+
+    showPreview(videoId);
+
+    const fetchBtn = document.getElementById('fetchBtn');
+    const genMsg   = document.getElementById('generatingMsg');
+    const panel    = document.getElementById('generatedPanel');
+
+    fetchBtn.disabled = true;
+    fetchBtn.textContent = '...';
+    genMsg.classList.add('show');
+    panel.classList.remove('show');
+
+    try {
+      const snippet   = await fetchYouTubeMeta(videoId);
+      const generated = await generateWithClaude(snippet);
+
+      document.getElementById('title').value  = generated.title  || '';
+      document.getElementById('lede').value   = generated.lede   || '';
+      document.getElementById('note').value   = generated.note   || '';
+      document.getElementById('region').value = generated.region || '';
+
+      const pillarEl = document.getElementById('pillar');
+      Array.from(pillarEl.options).forEach(o => { o.selected = o.value === generated.pillar; });
+
+      panel.classList.add('show');
+    } catch (err) {
+      console.error(err);
+      alert('Something went wrong. Check the console for details.');
+    }
+
+    genMsg.classList.remove('show');
+    fetchBtn.disabled = false;
+    fetchBtn.textContent = 'Generate →';
+  });
+
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGJASi7WQmhxf-KTVWL54jwkgmwS4P16Z1HjpviFLZSabZbSxhHXAmmSiuOZavR9irvw/exec';
+
+  async function appendRow({ title, lede, pillar, region, videoId, note, type }) {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, lede, pillar, region, videoId, note, type })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', async () => {
+    const videoId = extractId(document.getElementById('youtubeUrl').value.trim());
+    const title   = document.getElementById('title').value.trim();
+    const lede    = document.getElementById('lede').value.trim();
+    const note    = document.getElementById('note').value.trim();
+    const pillar  = document.getElementById('pillar').value;
+    const type    = document.getElementById('type').value;
+    const region  = document.getElementById('region').value.trim();
+
+    if (!videoId || !title || !lede || !pillar || !region) {
+      toast('Please fill in all fields.', true); return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'Adding...';
+
+    try {
+      await appendRow({ title, lede, pillar, region, videoId, note, type });
+      toast('Added. It will appear on the site on next page load.');
+      ['youtubeUrl','title','lede','note','region'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('pillar').value = '';
+      document.getElementById('previewWrap').classList.remove('show');
+      document.getElementById('previewLabel').style.display = 'none';
+      document.getElementById('generatedPanel').classList.remove('show');
+      loadEntries();
+    } catch (err) {
+      toast('Could not add entry — check the console for details.', true);
+      console.error(err);
+    }
+
+    btn.disabled = false; btn.textContent = 'Add to Get Cultured →';
+  });
+
+  async function loadEntries() {
+    try {
+      const res  = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1?key=${API_KEY}`);
+      const data = await res.json();
+      const rows = data.values || [];
+      if (rows.length < 2) return;
+      const headers = rows[0];
+      const entries = rows.slice(1).map(row => {
+        const obj = {};
+        headers.forEach((h, i) => obj[h.trim()] = (row[i] || '').trim());
+        return obj;
+      });
+      document.getElementById('entriesTitle').style.display = 'block';
+      document.getElementById('entryList').innerHTML = entries.map(e => `
+        <li class="entry-item">
+          <div class="entry-info">
+            <div class="entry-title">${e.title || '—'}</div>
+            <div class="entry-meta">${e.pillar || ''} &nbsp;·&nbsp; ${e.region || ''}</div>
+          </div>
+          <span class="entry-id">${e.videoId || ''}</span>
+        </li>`).join('');
+    } catch(e) { console.error('Could not load entries', e); }
+  }
+
+  loadEntries();
+</script>
+</body>
+</html>
