@@ -341,16 +341,11 @@ Generate content for this post. Respond ONLY with a valid JSON object, no markdo
   "region": "The geographic region or country this content is from"
 }`;
 
-    const res = await fetch(APPS_SCRIPT_URL, {
+    await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'generate', prompt })
+      mode: 'no-cors',
+      body: new URLSearchParams({ data: JSON.stringify({ action: 'generate', prompt }) })
     });
-
-    const data  = await res.json();
-    const text  = data.content.map(b => b.text || '').join('');
-    const clean = text.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
   }
 
   document.getElementById('fetchBtn').addEventListener('click', async () => {
@@ -396,13 +391,11 @@ Generate content for this post. Respond ONLY with a valid JSON object, no markdo
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGJASi7WQmhxf-KTVWL54jwkgmwS4P16Z1HjpviFLZSabZbSxhHXAmmSiuOZavR9irvw/exec';
 
   async function appendRow({ title, lede, pillar, region, videoId, note, type }) {
-    const res = await fetch(APPS_SCRIPT_URL, {
+    await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, lede, pillar, region, videoId, note, type })
+      mode: 'no-cors',
+      body: new URLSearchParams({ data: JSON.stringify({ action: 'append', title, lede, pillar, region, videoId, note, type }) })
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
   }
 
   document.getElementById('submitBtn').addEventListener('click', async () => {
