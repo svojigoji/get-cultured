@@ -433,7 +433,7 @@ Generate content for this post. Respond ONLY with a valid JSON object, no markdo
 
   async function loadEntries() {
     try {
-      const res  = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1?key=${API_KEY}`);
+      const res  = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/get-cultured-content?key=${API_KEY}`);
       const data = await res.json();
       const rows = data.values || [];
       if (rows.length < 2) return;
