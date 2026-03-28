@@ -9,7 +9,7 @@ export async function GET() {
 
   console.log('[/api/posts] fetching:', url)
 
-  const res = await fetch(url)
+  const res = await fetch(url, { cache: 'no-store' })
 
   if (!res.ok) {
     const body = await res.text()
@@ -21,11 +21,15 @@ export async function GET() {
   }
 
   const json = await res.json()
+  console.log('[/api/posts] values rows:', json.values?.length ?? 'undefined')
+
   const [, ...dataRows]: string[][] = json.values ?? []
 
   const posts = dataRows.map((row) =>
     Object.fromEntries(COLUMNS.map((col, i) => [col, row[i] ?? '']))
   )
+
+  console.log('[/api/posts] posts parsed:', posts.length)
 
   return Response.json(posts)
 }
