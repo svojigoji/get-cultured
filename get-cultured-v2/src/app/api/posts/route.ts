@@ -24,6 +24,7 @@ export async function GET() {
   }
 
   const json = await res.json()
+  console.log('[/api/posts] full response:', JSON.stringify(json))
   console.log('[/api/posts] values rows:', json.values?.length ?? 'undefined')
 
   const [, ...dataRows]: string[][] = json.values ?? []
