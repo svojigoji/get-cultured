@@ -341,11 +341,33 @@ Generate content for this post. Respond ONLY with a valid JSON object, no markdo
   "region": "The geographic region or country this content is from"
 }`;
 
-    await fetch(APPS_SCRIPT_URL, {
+    const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors',
-      body: new URLSearchParams({ data: JSON.stringify({ action: 'generate', prompt }) })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'generate', prompt })
     });
+
+    if (!res.ok) throw new Error(`Apps Script responded with ${res.status}`);
+
+    const text = await res.text();
+    if (!text || !text.trim()) throw new Error('Apps Script returned an empty response');
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(`Could not parse response: ${text.slice(0, 200)}`);
+    }
+
+    const content = data?.content?.map(b => b.text ?? '').join('') ?? '';
+    if (!content) throw new Error('Response contained no generated text');
+
+    const clean = content.replace(/```json|```/g, '').trim();
+    try {
+      return JSON.parse(clean);
+    } catch {
+      throw new Error(`Generated text was not valid JSON: ${clean.slice(0, 200)}`);
+    }
   }
 
   document.getElementById('fetchBtn').addEventListener('click', async () => {
@@ -380,7 +402,7 @@ Generate content for this post. Respond ONLY with a valid JSON object, no markdo
       panel.classList.add('show');
     } catch (err) {
       console.error(err);
-      alert('Something went wrong. Check the console for details.');
+      toast(err instanceof Error ? err.message : 'Something went wrong generating content.', true);
     }
 
     genMsg.classList.remove('show');
