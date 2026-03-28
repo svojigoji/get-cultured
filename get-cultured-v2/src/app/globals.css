@@ -120,6 +120,60 @@
   --font-mono:    var(--font-inconsolata);
 }
 
+/* ─── Post view — dark cinematic layer ─────────────────────────── */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.post-bar-back {
+  font-family: var(--font-inconsolata), monospace;
+  font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: rgba(232,220,197,0.75); background: none; border: none; cursor: none;
+  transition: color 0.2s;
+}
+.post-bar-back:hover { color: #E8DCC5; }
+
+.post-bar-tag {
+  font-family: var(--font-inconsolata), monospace;
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid rgba(232,220,197,0.25);
+  color: rgba(232,220,197,0.55);
+}
+.post-bar-tag.gold { color: #8C6E2A; border-color: rgba(140,110,42,0.5); }
+
+.post-bar-again {
+  font-family: var(--font-inconsolata), monospace;
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: #E8DCC5; background: transparent;
+  border: 1.5px solid rgba(232,220,197,0.4);
+  padding: 0.55rem 1.3rem; cursor: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+.post-bar-again:hover {
+  background: rgba(232,220,197,0.12);
+  border-color: rgba(232,220,197,0.7);
+}
+.post-bar-again:disabled { opacity: 0.4; pointer-events: none; }
+
+.post-again-btn {
+  font-family: var(--font-inconsolata), monospace;
+  font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: #E8DCC5; background: transparent;
+  border: 1.5px solid rgba(232,220,197,0.35);
+  padding: 1rem 2.4rem; cursor: none;
+  display: inline-flex; align-items: center; gap: 0.8rem;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.post-again-btn:hover {
+  background: rgba(232,220,197,0.08);
+  border-color: rgba(232,220,197,0.65);
+  transform: translateX(3px);
+}
+.post-again-btn:disabled { opacity: 0.4; pointer-events: none; }
+
 /* ─── Base typography ───────────────────────────────────────────── */
 
 @layer base {

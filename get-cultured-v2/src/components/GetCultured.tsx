@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type Post = {
   title: string
@@ -23,6 +23,8 @@ function pickRandom<T>(arr: T[], exclude?: T): T {
   const filtered = exclude ? arr.filter((x) => x !== exclude) : arr
   return filtered[Math.floor(Math.random() * filtered.length)]
 }
+
+const GRAIN = `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
 
 // ─── Landing ──────────────────────────────────────────────────────
 
@@ -74,97 +76,232 @@ function Landing({
 function Post({
   post,
   onAgain,
+  onBack,
   loading,
 }: {
   post: Post
   onAgain: () => void
+  onBack: () => void
   loading: boolean
 }) {
-  return (
-    <main className="min-h-screen bg-paper px-6 py-16 flex flex-col items-center">
-      <article className="w-full max-w-2xl flex flex-col gap-8">
+  const cursorRef    = useRef<HTMLDivElement>(null)
+  const cursorShown  = useRef(false)
+  const [cursorBig, setCursorBig] = useState(false)
+  const [visible, setVisible]     = useState(false)
 
-        {/* Pillar + region labels */}
-        <div className="flex items-center gap-3">
+  useEffect(() => {
+    // Fade the post in after paint
+    const t = setTimeout(() => setVisible(true), 20)
+
+    // Hide the system cursor
+    document.body.style.cursor = 'none'
+
+    const onMove = (e: MouseEvent) => {
+      if (!cursorRef.current) return
+      if (!cursorShown.current) {
+        cursorShown.current = true
+        cursorRef.current.style.opacity = '1'
+      }
+      cursorRef.current.style.left = e.clientX + 'px'
+      cursorRef.current.style.top  = e.clientY + 'px'
+    }
+    window.addEventListener('mousemove', onMove)
+
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('mousemove', onMove)
+      document.body.style.cursor = ''
+    }
+  }, [])
+
+  const hover = {
+    onMouseEnter: () => setCursorBig(true),
+    onMouseLeave: () => setCursorBig(false),
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0,
+        background: '#17100A',
+        overflowY: 'auto',
+        zIndex: 10,
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.5s ease 0.1s',
+      }}
+    >
+      {/* ── Custom cursor ── */}
+      <div
+        ref={cursorRef}
+        style={{
+          position: 'fixed',
+          width:  cursorBig ? 40 : 9,
+          height: cursorBig ? 40 : 9,
+          background: cursorBig ? '#8C6E2A' : '#7A3B10',
+          pointerEvents: 'none',
+          zIndex: 9999,
+          transform: 'translate(-50%, -50%)',
+          transition: 'width 0.25s ease, height 0.25s ease, background 0.25s ease',
+          opacity: 0,
+        }}
+      />
+
+      {/* ── Grain overlay ── */}
+      <div style={{
+        position: 'fixed', inset: 0,
+        pointerEvents: 'none', zIndex: 900, opacity: 0.07,
+        backgroundImage: GRAIN,
+      }} />
+
+      {/* ── Vignette overlay ── */}
+      <div style={{
+        position: 'fixed', inset: 0,
+        pointerEvents: 'none', zIndex: 901,
+        background: 'radial-gradient(ellipse 85% 80% at 50% 50%, transparent 50%, rgba(60,35,10,0.18) 100%)',
+      }} />
+
+      {/* ── Top nav ── */}
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '1.4rem 2rem',
+        zIndex: 100,
+        background: 'linear-gradient(to bottom, rgba(23,16,10,0.7) 0%, transparent 100%)',
+      }}>
+        <button className="post-bar-back" onClick={onBack} {...hover}>
+          ← Get Cultured
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
           {post.pillar && (
-            <span className="label text-saddle">{post.pillar}</span>
-          )}
-          {post.pillar && post.region && (
-            <span className="label text-dust">·</span>
+            <span className="post-bar-tag gold">{post.pillar}</span>
           )}
           {post.region && (
-            <span className="label text-dust">{post.region}</span>
+            <span className="post-bar-tag">{post.region}</span>
+          )}
+        </div>
+
+        <button className="post-bar-again" onClick={onAgain} disabled={loading} {...hover}>
+          {loading ? '…' : 'Again →'}
+        </button>
+      </nav>
+
+      {/* ── Video hero ── */}
+      {post.videoId && (
+        <div style={{
+          position: 'relative', width: '100%',
+          paddingBottom: 'min(56.25%, 56.25vw)',
+          background: '#0a0704', flexShrink: 0,
+        }}>
+          <iframe
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+            src={`https://www.youtube.com/embed/${post.videoId}?autoplay=1&rel=0&modestbranding=1`}
+            title={post.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+          {/* Fade into caption */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            height: '30%', pointerEvents: 'none',
+            background: 'linear-gradient(to bottom, transparent, #17100A)',
+          }} />
+        </div>
+      )}
+
+      {/* ── Caption ── */}
+      <div style={{
+        background: '#17100A',
+        padding: '2.8rem 2rem 5rem',
+        maxWidth: 780, margin: '0 auto', width: '100%',
+      }}>
+        {/* Meta row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.4rem' }}>
+          {post.pillar && (
+            <span style={{
+              fontFamily: 'var(--font-inconsolata)', fontSize: 10,
+              letterSpacing: '0.3em', textTransform: 'uppercase', color: '#8C6E2A',
+            }}>
+              {post.pillar}
+            </span>
+          )}
+          {post.pillar && post.region && (
+            <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(232,220,197,0.2)', display: 'inline-block', flexShrink: 0 }} />
+          )}
+          {post.region && (
+            <span style={{
+              fontFamily: 'var(--font-inconsolata)', fontSize: 10,
+              letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(232,220,197,0.35)',
+            }}>
+              {post.region}
+            </span>
           )}
         </div>
 
         {/* Title */}
-        <h1 className="font-heading text-ink text-4xl sm:text-5xl font-semibold leading-tight tracking-tight">
+        <h1 style={{
+          fontFamily: 'var(--font-playfair)',
+          fontWeight: 400,
+          fontSize: 'clamp(28px, 4vw, 48px)',
+          lineHeight: 1.08,
+          letterSpacing: '-0.01em',
+          color: '#E8DCC5',
+          marginBottom: '1.2rem',
+        }}>
           {post.title}
         </h1>
 
-        {/* Gold rule */}
-        <div className="h-px bg-gold opacity-40 w-16" />
-
         {/* Lede */}
         {post.lede && (
-          <p className="font-serif text-ink-soft text-lg leading-relaxed">
+          <p style={{
+            fontSize: 'clamp(15px, 1.7vw, 19px)',
+            fontWeight: 300,
+            fontStyle: 'italic',
+            lineHeight: 1.6,
+            color: 'rgba(232,220,197,0.65)',
+            borderLeft: '2px solid #7A3B10',
+            paddingLeft: '1.2rem',
+            marginBottom: '2rem',
+          }}>
             {post.lede}
           </p>
         )}
 
-        {/* YouTube embed */}
-        {post.videoId && (
-          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-            <iframe
-              className="absolute inset-0 w-full h-full"
-              src={`https://www.youtube.com/embed/${post.videoId}`}
-              title={post.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        )}
-
         {/* Curator note */}
         {post.note && (
-          <p className="font-serif italic text-dust text-sm leading-relaxed border-l-2 border-gold pl-4">
-            {post.note}
+          <p style={{
+            fontFamily: 'var(--font-inconsolata)',
+            fontSize: 11,
+            letterSpacing: '0.08em',
+            color: 'rgba(232,220,197,0.3)',
+            fontStyle: 'italic',
+            marginBottom: '2.5rem',
+          }}>
+            ↑ {post.note}
           </p>
         )}
 
-        {/* Again button */}
-        <div className="pt-8 flex justify-center">
-          <button
-            onClick={onAgain}
-            disabled={loading}
-            className="
-              font-heading text-lg tracking-tight
-              bg-ink text-paper-light
-              px-10 py-4
-              border border-ink
-              transition-colors duration-200
-              hover:bg-ink-soft hover:border-ink-soft
-              active:scale-[0.98]
-              disabled:opacity-50
-              cursor-pointer disabled:cursor-wait
-            "
-          >
-            {loading ? 'Finding something…' : 'Again →'}
-          </button>
-        </div>
-      </article>
-    </main>
+        {/* Rule */}
+        <div style={{ width: '100%', height: 1, background: 'rgba(232,220,197,0.08)', margin: '0 0 2.5rem' }} />
+
+        {/* Again */}
+        <button className="post-again-btn" onClick={onAgain} disabled={loading} {...hover}>
+          {loading ? 'Finding something…' : <>Get Cultured Again <span>→</span></>}
+        </button>
+      </div>
+    </div>
   )
 }
 
 // ─── Root ─────────────────────────────────────────────────────────
 
 export default function GetCultured() {
-  const [view, setView]     = useState<'landing' | 'post'>('landing')
-  const [post, setPost]     = useState<Post | null>(null)
-  const [rows, setRows]     = useState<Post[]>([])
+  const [view, setView]       = useState<'landing' | 'post'>('landing')
+  const [post, setPost]       = useState<Post | null>(null)
+  const [rows, setRows]       = useState<Post[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError]   = useState<string | null>(null)
+  const [error, setError]     = useState<string | null>(null)
 
   async function handleGetCultured() {
     setLoading(true)
@@ -185,11 +322,15 @@ export default function GetCultured() {
   function handleAgain() {
     if (!rows.length) return
     setLoading(true)
-    // Defer so the disabled state renders before the synchronous work
     setTimeout(() => {
       setPost(pickRandom(rows, post ?? undefined))
       setLoading(false)
     }, 0)
+  }
+
+  function handleBack() {
+    setView('landing')
+    setPost(null)
   }
 
   if (error) {
@@ -208,7 +349,7 @@ export default function GetCultured() {
   }
 
   if (view === 'post' && post) {
-    return <Post post={post} onAgain={handleAgain} loading={loading} />
+    return <Post post={post} onAgain={handleAgain} onBack={handleBack} loading={loading} />
   }
 
   return <Landing onGetCultured={handleGetCultured} loading={loading} />
