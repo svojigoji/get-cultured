@@ -3,10 +3,9 @@ const API_KEY  = 'AIzaSyAHfpMauIr_K3hQkXzN-a8hvFHx1SWY_Yg'
 const COLUMNS  = ['title', 'lede', 'pillar', 'region', 'videoId', 'note', 'type'] as const
 
 export async function GET() {
-  const url =
-    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/get-cultured-content!A:G` +
-    `?key=${API_KEY}`
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/get-cultured-content!A:G?key=${API_KEY}`
 
+  console.log('[/api/posts] SHEET_ID:', SHEET_ID)
   console.log('[/api/posts] fetching:', url)
 
   const res = await fetch(url, {
