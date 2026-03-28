@@ -9,7 +9,10 @@ export async function GET() {
 
   console.log('[/api/posts] fetching:', url)
 
-  const res = await fetch(url, { cache: 'no-store' })
+  const res = await fetch(url, {
+    cache: 'no-store',
+    headers: { 'Referer': 'https://get-cultured.vercel.app' },
+  })
 
   if (!res.ok) {
     const body = await res.text()
