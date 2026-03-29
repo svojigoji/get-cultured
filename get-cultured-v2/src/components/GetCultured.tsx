@@ -31,17 +31,34 @@ const GRAIN = `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http:
 function Landing({
   onGetCultured,
   loading,
+  leaving,
 }: {
   onGetCultured: () => void
   loading: boolean
+  leaving: boolean
 }) {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center min-h-screen bg-paper px-6 text-center">
-      <p className="label text-dust mb-10 tracking-widest" aria-hidden="true">
+    <main
+      className="flex flex-1 flex-col items-center justify-center min-h-screen bg-paper px-6 text-center"
+      style={{
+        opacity: leaving ? 0 : 1,
+        transform: leaving ? 'scale(0.97)' : 'scale(1)',
+        transition: 'opacity 0.5s cubic-bezier(0.4, 0, 1, 1), transform 0.5s cubic-bezier(0.4, 0, 1, 1)',
+      }}
+    >
+      <p
+        className="anim-fade-up label text-dust mb-10 tracking-widest"
+        style={{ animationDelay: '0.15s' }}
+        aria-hidden="true"
+      >
         A cultural discovery engine
       </p>
 
-      <h1 suppressHydrationWarning={true} className="font-heading text-ink text-5xl sm:text-6xl md:text-7xl font-bold leading-none tracking-tighter max-w-2xl mb-14">
+      <h1
+        suppressHydrationWarning={true}
+        className="anim-fade-up font-heading text-ink text-5xl sm:text-6xl md:text-7xl font-bold leading-none tracking-tighter max-w-2xl mb-14"
+        style={{ animationDelay: '0.4s' }}
+      >
         The world is <span className="italic">stranger</span>{' '}than you think.
       </h1>
 
@@ -50,21 +67,26 @@ function Landing({
         disabled={loading}
         suppressHydrationWarning={true}
         className="
+          anim-fade-up
           font-heading text-lg tracking-tight
           bg-ink text-paper-light
           px-10 py-4
           border border-ink
-          transition-colors duration-200
+          transition-[colors,transform] duration-200
           hover:bg-ink-soft hover:border-ink-soft
           active:scale-[0.98]
           disabled:opacity-50
           cursor-pointer disabled:cursor-wait
         "
+        style={{ animationDelay: '0.65s' }}
       >
         {loading ? 'Finding something…' : 'Get Cultured'}
       </button>
 
-      <p className="label text-dust mt-16 tracking-widest opacity-50 text-xs">
+      <p
+        className="anim-fade-up label text-dust mt-16 tracking-widest opacity-50 text-xs"
+        style={{ animationDelay: '0.85s' }}
+      >
         Press the button. See what happens.
       </p>
     </main>
@@ -91,7 +113,12 @@ function Post({
   const [visible, setVisible]           = useState(false)
 
   useEffect(() => {
-    // Fade the post in after paint
+    // Respect reduced-motion: show instantly, skip transition
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReduced) {
+      setVisible(true)
+      return
+    }
     const t = setTimeout(() => setVisible(true), 20)
 
     // Hide the system cursor
@@ -129,7 +156,7 @@ function Post({
         overflowY: 'auto',
         zIndex: 10,
         opacity: visible ? 1 : 0,
-        transition: 'opacity 0.5s ease 0.1s',
+        transition: 'opacity 0.6s cubic-bezier(0, 0, 0.2, 1) 0.15s',
       }}
     >
       {/* ── Custom cursor ── */}
@@ -143,7 +170,7 @@ function Post({
           pointerEvents: 'none',
           zIndex: 9999,
           transform: 'translate(-50%, -50%)',
-          transition: 'width 0.25s ease, height 0.25s ease, background 0.25s ease',
+          transition: 'width 0.2s cubic-bezier(0, 0, 0.2, 1), height 0.2s cubic-bezier(0, 0, 0.2, 1), background 0.2s ease',
           opacity: cursorVisible ? 1 : 0,
         }}
       />
@@ -312,9 +339,11 @@ export default function GetCultured() {
   const [post, setPost]       = useState<Post | null>(null)
   const [rows, setRows]       = useState<Post[]>([])
   const [loading, setLoading] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   const [error, setError]     = useState<string | null>(null)
 
   async function handleGetCultured() {
+    setLeaving(true)
     setLoading(true)
     setError(null)
     try {
@@ -324,6 +353,7 @@ export default function GetCultured() {
       setPost(pickRandom(fetched))
       setView('post')
     } catch (e) {
+      setLeaving(false)
       setError(e instanceof Error ? e.message : 'Something went wrong.')
     } finally {
       setLoading(false)
@@ -342,6 +372,7 @@ export default function GetCultured() {
   function handleBack() {
     setView('landing')
     setPost(null)
+    setLeaving(false)
   }
 
   if (error) {
@@ -363,5 +394,5 @@ export default function GetCultured() {
     return <Post post={post} onAgain={handleAgain} onBack={handleBack} loading={loading} />
   }
 
-  return <Landing onGetCultured={handleGetCultured} loading={loading} />
+  return <Landing onGetCultured={handleGetCultured} loading={loading} leaving={leaving} />
 }

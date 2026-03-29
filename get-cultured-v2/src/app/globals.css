@@ -120,18 +120,26 @@
   --font-mono:    var(--font-inconsolata);
 }
 
-/* ─── Post view — dark cinematic layer ─────────────────────────── */
+/* ─── Animations ────────────────────────────────────────────────── */
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* Landing entrance — apply with animationDelay inline style */
+.anim-fade-up {
+  opacity: 0;
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Post view — dark cinematic layer ─────────────────────────── */
 
 .post-bar-back {
   font-family: var(--font-inconsolata), monospace;
   font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
   color: rgba(232,220,197,0.75); background: none; border: none; cursor: none;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 .post-bar-back:hover { color: #E8DCC5; }
 
@@ -150,7 +158,7 @@
   color: #E8DCC5; background: transparent;
   border: 1.5px solid rgba(232,220,197,0.4);
   padding: 0.55rem 1.3rem; cursor: none;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 .post-bar-again:hover {
   background: rgba(232,220,197,0.12);
@@ -165,14 +173,35 @@
   border: 1.5px solid rgba(232,220,197,0.35);
   padding: 1rem 2.4rem; cursor: none;
   display: inline-flex; align-items: center; gap: 0.8rem;
-  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  transition: background 0.2s ease,
+              border-color 0.2s ease,
+              transform 0.25s cubic-bezier(0, 0, 0.2, 1);
 }
 .post-again-btn:hover {
   background: rgba(232,220,197,0.08);
   border-color: rgba(232,220,197,0.65);
-  transform: translateX(3px);
+  transform: translateX(4px);
 }
 .post-again-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+/* ─── Reduced motion ────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-fade-up {
+    animation: none;
+    opacity: 1;
+  }
+
+  .post-bar-back,
+  .post-bar-again,
+  .post-again-btn {
+    transition: none;
+  }
+
+  .post-again-btn:hover {
+    transform: none;
+  }
+}
 
 /* ─── Base typography ───────────────────────────────────────────── */
 
