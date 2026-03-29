@@ -315,60 +315,7 @@
     setTimeout(() => t.className = '', 6000);
   }
 
-  async function fetchYouTubeMeta(videoId) {
-    const url  = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${API_KEY}`;
-    const res  = await fetch(url);
-    const data = await res.json();
-    if (!data.items || !data.items.length) throw new Error('Video not found');
-    return data.items[0].snippet;
-  }
-
-  async function generateWithClaude(snippet) {
-    const prompt = `You are the content curator for "Get Cultured" — a site surfacing niche cultural discoveries from around the world through video.
-
-A video has been submitted with this YouTube metadata:
-Title: ${snippet.title}
-Description: ${snippet.description ? snippet.description.slice(0, 600) : 'No description'}
-Channel: ${snippet.channelTitle}
-
-Generate content for this post. Respond ONLY with a valid JSON object, no markdown, no backticks:
-
-{
-  "title": "A short evocative post title in Get Cultured style — rewrite the YouTube title, do not copy it verbatim. No HTML tags.",
-  "lede": "One or two sentences. Specific, curious, no fluff. This is all the viewer reads before watching.",
-  "note": "One short line about what to watch or listen for in the video.",
-  "pillar": "One of exactly: Sound, Taste, Make, Believe, Play, Speak",
-  "region": "The geographic region or country this content is from"
-}`;
-
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'generate', prompt })
-    });
-
-    if (!res.ok) throw new Error(`Apps Script responded with ${res.status}`);
-
-    const text = await res.text();
-    if (!text || !text.trim()) throw new Error('Apps Script returned an empty response');
-
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error(`Could not parse response: ${text.slice(0, 200)}`);
-    }
-
-    const content = data?.content?.map(b => b.text ?? '').join('') ?? '';
-    if (!content) throw new Error('Response contained no generated text');
-
-    const clean = content.replace(/```json|```/g, '').trim();
-    try {
-      return JSON.parse(clean);
-    } catch {
-      throw new Error(`Generated text was not valid JSON: ${clean.slice(0, 200)}`);
-    }
-  }
+  const GENERATE_URL = 'https://get-cultured.vercel.app/api/generate';
 
   document.getElementById('fetchBtn').addEventListener('click', async () => {
     const url     = document.getElementById('youtubeUrl').value.trim();
@@ -388,8 +335,18 @@ Generate content for this post. Respond ONLY with a valid JSON object, no markdo
     panel.classList.remove('show');
 
     try {
-      const snippet   = await fetchYouTubeMeta(videoId);
-      const generated = await generateWithClaude(snippet);
+      const res = await fetch(GENERATE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Server error ${res.status}`);
+      }
+
+      const generated = await res.json();
 
       document.getElementById('title').value  = generated.title  || '';
       document.getElementById('lede').value   = generated.lede   || '';
@@ -398,6 +355,9 @@ Generate content for this post. Respond ONLY with a valid JSON object, no markdo
 
       const pillarEl = document.getElementById('pillar');
       Array.from(pillarEl.options).forEach(o => { o.selected = o.value === generated.pillar; });
+
+      const typeEl = document.getElementById('type');
+      Array.from(typeEl.options).forEach(o => { o.selected = o.value === generated.type; });
 
       panel.classList.add('show');
     } catch (err) {
