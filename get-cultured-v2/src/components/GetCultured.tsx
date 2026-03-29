@@ -84,10 +84,11 @@ function Post({
   onBack: () => void
   loading: boolean
 }) {
-  const cursorRef    = useRef<HTMLDivElement>(null)
-  const cursorShown  = useRef(false)
-  const [cursorBig, setCursorBig] = useState(false)
-  const [visible, setVisible]     = useState(false)
+  const cursorRef      = useRef<HTMLDivElement>(null)
+  const cursorShown    = useRef(false)
+  const [cursorBig, setCursorBig]       = useState(false)
+  const [cursorVisible, setCursorVisible] = useState(false)
+  const [visible, setVisible]           = useState(false)
 
   useEffect(() => {
     // Fade the post in after paint
@@ -98,9 +99,10 @@ function Post({
 
     const onMove = (e: MouseEvent) => {
       if (!cursorRef.current) return
+      // Show cursor on first move (state so it survives re-renders)
       if (!cursorShown.current) {
         cursorShown.current = true
-        cursorRef.current.style.opacity = '1'
+        setCursorVisible(true)
       }
       cursorRef.current.style.left = e.clientX + 'px'
       cursorRef.current.style.top  = e.clientY + 'px'
@@ -142,7 +144,7 @@ function Post({
           zIndex: 9999,
           transform: 'translate(-50%, -50%)',
           transition: 'width 0.25s ease, height 0.25s ease, background 0.25s ease',
-          opacity: 0,
+          opacity: cursorVisible ? 1 : 0,
         }}
       />
 
@@ -239,7 +241,7 @@ function Post({
           )}
         </div>
 
-        {/* Title */}
+        {/* Title — last word italic gold */}
         <h1 style={{
           fontFamily: 'var(--font-playfair)',
           fontWeight: 400,
@@ -249,7 +251,16 @@ function Post({
           color: '#E8DCC5',
           marginBottom: '1.2rem',
         }}>
-          {post.title}
+          {(() => {
+            const words = post.title.trim().split(' ')
+            if (words.length < 2) return post.title
+            const last = words.pop()!
+            return (
+              <>{words.join(' ')}{' '}
+                <span style={{ fontStyle: 'italic', color: '#8C6E2A' }}>{last}</span>
+              </>
+            )
+          })()}
         </h1>
 
         {/* Lede */}
