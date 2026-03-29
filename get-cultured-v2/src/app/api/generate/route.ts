@@ -1,4 +1,4 @@
-const YT_API_KEY  = 'AIzaSyAHfpMauIr_K3hQkXzN-a8hvFHx1SWY_Yg'
+const YT_API_KEY   = 'AIzaSyAHfpMauIr_K3hQkXzN-a8hvFHx1SWY_Yg'
 const CLAUDE_MODEL = 'claude-sonnet-4-6'
 
 async function fetchYouTubeMeta(videoId: string) {
@@ -14,22 +14,30 @@ async function generateWithClaude(snippet: { title: string; description: string;
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not set')
 
-  const prompt = `You are the content curator for "Get Cultured" — a site surfacing niche cultural discoveries from around the world through video.
+  const prompt = `You are the editorial voice of "Get Cultured" — a curation site that surfaces niche cultural discoveries from around the world through video. The tone is curious, specific, and never generic. You write like a well-traveled editor who finds ordinary things extraordinary and extraordinary things ordinary. Every word earns its place.
 
 A video has been submitted with this YouTube metadata:
 Title: ${snippet.title}
-Description: ${snippet.description ? snippet.description.slice(0, 600) : 'No description'}
+Description: ${snippet.description ? snippet.description.slice(0, 800) : 'No description'}
 Channel: ${snippet.channelTitle}
 
-Generate content for this post. Respond ONLY with a valid JSON object, no markdown, no backticks:
+Generate editorial content for this post. Rules:
+- The title must be rewritten in Get Cultured style — evocative, surprising, specific. Never copy the YouTube title verbatim. No HTML tags.
+- The lede is one or two sentences maximum. It must make the reader feel they are about to discover something they have never seen before. No filler phrases like "explore", "discover", "dive into", "take a look". Be concrete.
+- The note is one short observational line — what to watch or listen for. It should feel like a whisper from someone who has already seen it.
+- The pillar must be exactly one of: Sound, Taste, Make, Believe, Play, Speak
+- The region is the specific country or geographic region the content originates from. Be precise — not "Asia" but "Okinawa, Japan".
+- The type must be exactly one of: The Clip, The Gem, The Stack
+
+Respond ONLY with a valid JSON object, no markdown, no backticks, no explanation:
 
 {
-  "title": "A short evocative post title in Get Cultured style — rewrite the YouTube title, do not copy it verbatim. No HTML tags.",
-  "lede": "One or two sentences. Specific, curious, no fluff. This is all the viewer reads before watching.",
-  "note": "One short line about what to watch or listen for in the video.",
-  "pillar": "One of exactly: Sound, Taste, Make, Believe, Play, Speak",
-  "region": "The geographic region or country this content is from",
-  "type": "One of exactly: The Clip, The Gem, The Stack"
+  "title": "...",
+  "lede": "...",
+  "note": "...",
+  "pillar": "...",
+  "region": "...",
+  "type": "..."
 }`
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -46,7 +54,10 @@ Generate content for this post. Respond ONLY with a valid JSON object, no markdo
     }),
   })
 
-  if (!res.ok) throw new Error(`Claude API error: ${res.status}`)
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Claude API error: ${res.status} — ${body}`)
+  }
 
   const data = await res.json()
   const text = (data.content as { type: string; text: string }[])
@@ -56,19 +67,29 @@ Generate content for this post. Respond ONLY with a valid JSON object, no markdo
   return JSON.parse(clean)
 }
 
+const CORS = {
+  'Access-Control-Allow-Origin':  'https://svojigoji.github.io',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS })
+}
+
 export async function POST(request: Request) {
   try {
     const { videoId } = await request.json()
     if (!videoId || typeof videoId !== 'string') {
-      return Response.json({ error: 'videoId is required' }, { status: 400 })
+      return Response.json({ error: 'videoId is required' }, { status: 400, headers: CORS })
     }
 
-    const snippet  = await fetchYouTubeMeta(videoId)
+    const snippet   = await fetchYouTubeMeta(videoId)
     const generated = await generateWithClaude(snippet)
 
-    return Response.json(generated)
+    return Response.json({ ...generated, videoId }, { headers: CORS })
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Unknown error'
-    return Response.json({ error: message }, { status: 500 })
+    return Response.json({ error: message }, { status: 500, headers: CORS })
   }
 }

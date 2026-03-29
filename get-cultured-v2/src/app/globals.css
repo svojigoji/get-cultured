@@ -17,6 +17,11 @@
   --gold:        #8C6E2A;
   --dust:        #A89070;
 
+  /* Emil easing curves */
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
   /* shadcn token layer — mapped to paper palette */
   --background:        #DDD0B4;
   --foreground:        #17100A;
@@ -123,14 +128,14 @@
 /* ─── Animations ────────────────────────────────────────────────── */
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Landing entrance — apply with animationDelay inline style */
 .anim-fade-up {
   opacity: 0;
-  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeUp 0.55s var(--ease-out) both;
 }
 
 /* ─── Post view — dark cinematic layer ─────────────────────────── */
@@ -139,9 +144,10 @@
   font-family: var(--font-inconsolata), monospace;
   font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
   color: rgba(232,220,197,0.75); background: none; border: none; cursor: none;
-  transition: color 0.2s ease;
+  transition: color 0.15s ease, transform 0.1s var(--ease-out);
 }
 .post-bar-back:hover { color: #E8DCC5; }
+.post-bar-back:active { transform: scale(0.97); }
 
 .post-bar-tag {
   font-family: var(--font-inconsolata), monospace;
@@ -158,12 +164,15 @@
   color: #E8DCC5; background: transparent;
   border: 1.5px solid rgba(232,220,197,0.4);
   padding: 0.55rem 1.3rem; cursor: none;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s var(--ease-out);
 }
-.post-bar-again:hover {
-  background: rgba(232,220,197,0.12);
-  border-color: rgba(232,220,197,0.7);
+@media (hover: hover) and (pointer: fine) {
+  .post-bar-again:hover {
+    background: rgba(232,220,197,0.12);
+    border-color: rgba(232,220,197,0.7);
+  }
 }
+.post-bar-again:active { transform: scale(0.97); }
 .post-bar-again:disabled { opacity: 0.4; pointer-events: none; }
 
 .post-again-btn {
@@ -173,16 +182,26 @@
   border: 1.5px solid rgba(232,220,197,0.35);
   padding: 1rem 2.4rem; cursor: none;
   display: inline-flex; align-items: center; gap: 0.8rem;
-  transition: background 0.2s ease,
-              border-color 0.2s ease,
-              transform 0.25s cubic-bezier(0, 0, 0.2, 1);
+  transition: background 0.15s ease,
+              border-color 0.15s ease,
+              transform 0.15s var(--ease-out);
 }
-.post-again-btn:hover {
-  background: rgba(232,220,197,0.08);
-  border-color: rgba(232,220,197,0.65);
-  transform: translateX(4px);
+@media (hover: hover) and (pointer: fine) {
+  .post-again-btn:hover {
+    background: rgba(232,220,197,0.08);
+    border-color: rgba(232,220,197,0.65);
+    transform: translateX(4px);
+  }
 }
+.post-again-btn:active { transform: scale(0.97); }
 .post-again-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+/* ─── Custom cursor — suppress system cursor on all elements ────── */
+
+body.cursor-hidden,
+body.cursor-hidden * {
+  cursor: none !important;
+}
 
 /* ─── Reduced motion ────────────────────────────────────────────── */
 
@@ -198,7 +217,10 @@
     transition: none;
   }
 
-  .post-again-btn:hover {
+  .post-again-btn:hover,
+  .post-bar-back:active,
+  .post-bar-again:active,
+  .post-again-btn:active {
     transform: none;
   }
 }

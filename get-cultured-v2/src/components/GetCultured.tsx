@@ -26,29 +26,63 @@ function pickRandom<T>(arr: T[], exclude?: T): T {
 
 const GRAIN = `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
 
+type HoverHandlers = { onMouseEnter: () => void; onMouseLeave: () => void }
+
 // ─── Landing ──────────────────────────────────────────────────────
 
 function Landing({
   onGetCultured,
   loading,
   leaving,
+  hover,
 }: {
   onGetCultured: () => void
   loading: boolean
   leaving: boolean
+  hover: HoverHandlers
 }) {
+  const reducedMotion = typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false
+
   return (
     <main
       className="flex flex-1 flex-col items-center justify-center min-h-screen bg-paper px-6 text-center"
       style={{
         opacity: leaving ? 0 : 1,
-        transform: leaving ? 'scale(0.97)' : 'scale(1)',
-        transition: 'opacity 0.5s cubic-bezier(0.4, 0, 1, 1), transform 0.5s cubic-bezier(0.4, 0, 1, 1)',
+        transform: (!reducedMotion && leaving) ? 'scale(0.97)' : 'scale(1)',
+        transition: reducedMotion
+          ? 'opacity 0.3s ease'
+          : 'opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1), transform 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
       }}
     >
+      {/* ── Grain overlay ── */}
+      <div style={{
+        position: 'fixed', inset: 0,
+        pointerEvents: 'none', zIndex: 900, opacity: 0.07,
+        backgroundImage: GRAIN,
+      }} />
+
+      {/* ── Vignette overlay ── */}
+      <div style={{
+        position: 'fixed', inset: 0,
+        pointerEvents: 'none', zIndex: 901,
+        background: 'radial-gradient(ellipse 85% 80% at 50% 50%, transparent 50%, rgba(140,100,50,0.18) 100%)',
+      }} />
+
+      {/* ── Paper stains ── */}
+      <div style={{
+        position: 'fixed', inset: 0,
+        pointerEvents: 'none', zIndex: 1,
+        background: [
+          'radial-gradient(ellipse 65% 55% at -5% 5%, rgba(160,120,60,0.07) 0%, transparent 70%)',
+          'radial-gradient(ellipse 60% 50% at 105% 95%, rgba(140,100,40,0.07) 0%, transparent 70%)',
+        ].join(', '),
+      }} />
+
       <p
         className="anim-fade-up label text-dust mb-10 tracking-widest"
-        style={{ animationDelay: '0.15s' }}
+        style={{ animationDelay: '0.1s' }}
         aria-hidden="true"
       >
         A cultural discovery engine
@@ -57,9 +91,9 @@ function Landing({
       <h1
         suppressHydrationWarning={true}
         className="anim-fade-up font-heading text-ink text-5xl sm:text-6xl md:text-7xl font-bold leading-none tracking-tighter max-w-2xl mb-14"
-        style={{ animationDelay: '0.4s' }}
+        style={{ animationDelay: '0.18s' }}
       >
-        The world is <span className="italic">stranger</span>{' '}than you think.
+        The world is <span className="italic" style={{ color: '#7A3B10' }}>stranger</span>{' '}than you think.
       </h1>
 
       <button
@@ -76,16 +110,16 @@ function Landing({
           hover:bg-ink-soft hover:border-ink-soft
           active:scale-[0.98]
           disabled:opacity-50
-          cursor-pointer disabled:cursor-wait
         "
-        style={{ animationDelay: '0.65s' }}
+        style={{ animationDelay: '0.26s' }}
+        {...hover}
       >
         {loading ? 'Finding something…' : 'Get Cultured'}
       </button>
 
       <p
         className="anim-fade-up label text-dust mt-16 tracking-widest opacity-50 text-xs"
-        style={{ animationDelay: '0.85s' }}
+        style={{ animationDelay: '0.34s' }}
       >
         Press the button. See what happens.
       </p>
@@ -100,53 +134,27 @@ function Post({
   onAgain,
   onBack,
   loading,
+  hover,
 }: {
   post: Post
   onAgain: () => void
   onBack: () => void
   loading: boolean
+  hover: HoverHandlers
 }) {
-  const cursorRef      = useRef<HTMLDivElement>(null)
-  const cursorShown    = useRef(false)
-  const [cursorBig, setCursorBig]       = useState(false)
-  const [cursorVisible, setCursorVisible] = useState(false)
-  const [visible, setVisible]           = useState(false)
+  const [visible, setVisible]             = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
 
   useEffect(() => {
-    // Respect reduced-motion: show instantly, skip transition
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (prefersReduced) {
+      setReducedMotion(true)
       setVisible(true)
       return
     }
     const t = setTimeout(() => setVisible(true), 20)
-
-    // Hide the system cursor
-    document.body.style.cursor = 'none'
-
-    const onMove = (e: MouseEvent) => {
-      if (!cursorRef.current) return
-      // Show cursor on first move (state so it survives re-renders)
-      if (!cursorShown.current) {
-        cursorShown.current = true
-        setCursorVisible(true)
-      }
-      cursorRef.current.style.left = e.clientX + 'px'
-      cursorRef.current.style.top  = e.clientY + 'px'
-    }
-    window.addEventListener('mousemove', onMove)
-
-    return () => {
-      clearTimeout(t)
-      window.removeEventListener('mousemove', onMove)
-      document.body.style.cursor = ''
-    }
+    return () => clearTimeout(t)
   }, [])
-
-  const hover = {
-    onMouseEnter: () => setCursorBig(true),
-    onMouseLeave: () => setCursorBig(false),
-  }
 
   return (
     <div
@@ -156,25 +164,12 @@ function Post({
         overflowY: 'auto',
         zIndex: 10,
         opacity: visible ? 1 : 0,
-        transition: 'opacity 0.6s cubic-bezier(0, 0, 0.2, 1) 0.15s',
+        transform: visible ? 'translateY(0)' : 'translateY(8px)',
+        transition: reducedMotion
+          ? 'none'
+          : 'opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1) 0.1s, transform 0.5s cubic-bezier(0.23, 1, 0.32, 1) 0.1s',
       }}
     >
-      {/* ── Custom cursor ── */}
-      <div
-        ref={cursorRef}
-        style={{
-          position: 'fixed',
-          width:  cursorBig ? 40 : 9,
-          height: cursorBig ? 40 : 9,
-          background: cursorBig ? '#8C6E2A' : '#7A3B10',
-          pointerEvents: 'none',
-          zIndex: 9999,
-          transform: 'translate(-50%, -50%)',
-          transition: 'width 0.2s cubic-bezier(0, 0, 0.2, 1), height 0.2s cubic-bezier(0, 0, 0.2, 1), background 0.2s ease',
-          opacity: cursorVisible ? 1 : 0,
-        }}
-      />
-
       {/* ── Grain overlay ── */}
       <div style={{
         position: 'fixed', inset: 0,
@@ -342,6 +337,40 @@ export default function GetCultured() {
   const [leaving, setLeaving] = useState(false)
   const [error, setError]     = useState<string | null>(null)
 
+  // ── Cursor ──────────────────────────────────────────────────────
+  const cursorRef    = useRef<HTMLDivElement>(null)
+  const cursorShown  = useRef(false)
+  const [cursorBig, setCursorBig]         = useState(false)
+  const [cursorVisible, setCursorVisible] = useState(false)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    document.body.classList.add('cursor-hidden')
+
+    const onMove = (e: MouseEvent) => {
+      if (!cursorRef.current) return
+      if (!cursorShown.current) {
+        cursorShown.current = true
+        setCursorVisible(true)
+      }
+      cursorRef.current.style.left = e.clientX + 'px'
+      cursorRef.current.style.top  = e.clientY + 'px'
+    }
+    window.addEventListener('mousemove', onMove)
+
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      document.body.classList.remove('cursor-hidden')
+    }
+  }, [])
+
+  const cursorHover: HoverHandlers = {
+    onMouseEnter: () => setCursorBig(true),
+    onMouseLeave: () => setCursorBig(false),
+  }
+
+  // ── Handlers ────────────────────────────────────────────────────
   async function handleGetCultured() {
     setLeaving(true)
     setLoading(true)
@@ -375,24 +404,44 @@ export default function GetCultured() {
     setLeaving(false)
   }
 
-  if (error) {
-    return (
-      <main className="flex flex-1 flex-col items-center justify-center min-h-screen bg-paper px-6 text-center gap-6">
-        <p className="label text-saddle tracking-widest">Something went wrong</p>
-        <p className="font-serif text-ink-soft">{error}</p>
-        <button
-          onClick={() => { setError(null); setView('landing') }}
-          className="label text-dust underline underline-offset-4 cursor-pointer"
-        >
-          Go back
-        </button>
-      </main>
-    )
-  }
+  // ── Cursor colour: dark on paper, rust on dark post background ──
+  const cursorSmall = view === 'post' ? '#7A3B10' : '#17100A'
 
-  if (view === 'post' && post) {
-    return <Post post={post} onAgain={handleAgain} onBack={handleBack} loading={loading} />
-  }
+  return (
+    <>
+      {/* ── Global cursor ── */}
+      <div
+        ref={cursorRef}
+        style={{
+          position: 'fixed',
+          width: 40,
+          height: 40,
+          background: cursorBig ? '#8C6E2A' : cursorSmall,
+          pointerEvents: 'none',
+          zIndex: 9999,
+          transform: `translate(-50%, -50%) scale(${cursorBig ? 1 : 0.225})`,
+          transition: 'transform 0.18s cubic-bezier(0.23, 1, 0.32, 1), background 0.18s ease, opacity 0.18s ease',
+          opacity: cursorVisible ? 1 : 0,
+        }}
+      />
 
-  return <Landing onGetCultured={handleGetCultured} loading={loading} leaving={leaving} />
+      {error ? (
+        <main className="flex flex-1 flex-col items-center justify-center min-h-screen bg-paper px-6 text-center gap-6">
+          <p className="label text-saddle tracking-widest">Something went wrong</p>
+          <p className="font-serif text-ink-soft">{error}</p>
+          <button
+            onClick={() => { setError(null); setView('landing') }}
+            className="label text-dust underline underline-offset-4"
+            {...cursorHover}
+          >
+            Go back
+          </button>
+        </main>
+      ) : view === 'post' && post ? (
+        <Post post={post} onAgain={handleAgain} onBack={handleBack} loading={loading} hover={cursorHover} />
+      ) : (
+        <Landing onGetCultured={handleGetCultured} loading={loading} leaving={leaving} hover={cursorHover} />
+      )}
+    </>
+  )
 }
