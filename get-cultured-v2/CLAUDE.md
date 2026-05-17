@@ -40,7 +40,15 @@ Fetch on every page load. No caching needed.
 title, lede, pillar, region, videoId, note, type
 
 ## Content Pillars
-Sound, Taste, Make, Believe, Play, Speak
+Niche, Obscure, What on Earth Am I Watching
+
+### Pillar Definitions
+- **Niche** — Sports with a dedicated subculture and serious competitors. Unusual but internally coherent (e.g. sepak takraw, underwater hockey, competitive dog agility).
+- **Obscure** — Sports that exist but most people have never heard of. Genuine athletic endeavour, just forgotten or regional (e.g. bossaball, fierljeppen, kabaddi).
+- **What on Earth Am I Watching** — Sports where the premise itself is the spectacle (e.g. cheese rolling, wife carrying, competitive air guitar).
+
+## Editorial Direction
+Get Cultured now focuses exclusively on the world's strangest, most niche, and most obscure sports. Editorial voice: sport-focused, specific, dry — like a seasoned correspondent covering cheese-rolling with complete journalistic sincerity.
 
 ## Post Formats
 - The Clip — embedded YouTube video + curator note

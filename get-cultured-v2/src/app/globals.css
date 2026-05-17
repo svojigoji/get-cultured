@@ -138,6 +138,21 @@
   animation: fadeUp 0.55s var(--ease-out) both;
 }
 
+/* ─── Post nav — responsive ─────────────────────────────────────── */
+
+.post-nav {
+  padding: 0.9rem 1rem;
+}
+
+/* Tags (pillar + region) hidden on small screens — visible in caption */
+@media (max-width: 479px) {
+  .post-nav-tags { display: none !important; }
+}
+
+@media (min-width: 480px) {
+  .post-nav { padding: 1.4rem 2rem; }
+}
+
 /* ─── Post view — dark cinematic layer ─────────────────────────── */
 
 .post-bar-back {
@@ -196,6 +211,38 @@
 .post-again-btn:active { transform: scale(0.97); }
 .post-again-btn:disabled { opacity: 0.4; pointer-events: none; }
 
+/* ─── Landing — 'stranger' heat shimmer ────────────────────────── */
+
+@keyframes heatShimmer {
+  0%, 100% {
+    text-shadow: 2px 0 0 rgba(122,59,16,0.30), -0.5px 0 0 rgba(140,110,42,0.15);
+  }
+  28% {
+    text-shadow: -2px 0 0 rgba(122,59,16,0.20), 1.5px 0 0 rgba(140,110,42,0.30);
+  }
+  55% {
+    text-shadow: 1.5px 0 0 rgba(140,110,42,0.28), -2px 0 0 rgba(122,59,16,0.18);
+  }
+  80% {
+    text-shadow: -1px 0 0 rgba(140,110,42,0.22), 2.5px 0 0 rgba(122,59,16,0.25);
+  }
+}
+
+.stranger-span {
+  display: inline-block;
+  will-change: transform;
+  transition: text-shadow 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stranger-span:hover {
+    /* Matches animation 0% frame exactly — transition leads seamlessly into animation */
+    text-shadow: 2px 0 0 rgba(122,59,16,0.30), -0.5px 0 0 rgba(140,110,42,0.15);
+    /* Delay lets the 0.3s transition complete before animation takes over */
+    animation: heatShimmer 1.2s cubic-bezier(0.37, 0, 0.63, 1) infinite 0.3s;
+  }
+}
+
 /* ─── Custom cursor — suppress system cursor on all elements ────── */
 
 body.cursor-hidden,
@@ -222,6 +269,11 @@ body.cursor-hidden * {
   .post-bar-again:active,
   .post-again-btn:active {
     transform: none;
+  }
+
+  .stranger-span {
+    transition: none;
+    animation: none !important;
   }
 }
 

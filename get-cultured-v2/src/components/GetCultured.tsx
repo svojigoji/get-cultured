@@ -25,6 +25,7 @@ function pickRandom<T>(arr: T[], exclude?: T): T {
 }
 
 const GRAIN = `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
+const GRAIN_COARSE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
 
 type HoverHandlers = { onMouseEnter: () => void; onMouseLeave: () => void }
 
@@ -59,15 +60,15 @@ function Landing({
       {/* ── Grain overlay ── */}
       <div style={{
         position: 'fixed', inset: 0,
-        pointerEvents: 'none', zIndex: 900, opacity: 0.07,
-        backgroundImage: GRAIN,
+        pointerEvents: 'none', zIndex: 900, opacity: 0.15,
+        backgroundImage: GRAIN_COARSE,
       }} />
 
       {/* ── Vignette overlay ── */}
       <div style={{
         position: 'fixed', inset: 0,
         pointerEvents: 'none', zIndex: 901,
-        background: 'radial-gradient(ellipse 85% 80% at 50% 50%, transparent 50%, rgba(140,100,50,0.18) 100%)',
+        background: 'radial-gradient(ellipse 85% 80% at 50% 50%, transparent 50%, rgba(60,35,10,0.28) 100%)',
       }} />
 
       {/* ── Paper stains ── */}
@@ -75,8 +76,8 @@ function Landing({
         position: 'fixed', inset: 0,
         pointerEvents: 'none', zIndex: 1,
         background: [
-          'radial-gradient(ellipse 65% 55% at -5% 5%, rgba(160,120,60,0.07) 0%, transparent 70%)',
-          'radial-gradient(ellipse 60% 50% at 105% 95%, rgba(140,100,40,0.07) 0%, transparent 70%)',
+          'radial-gradient(ellipse 70% 50% at 12% 18%, rgba(80,50,10,0.07) 0%, transparent 65%)',
+          'radial-gradient(ellipse 50% 70% at 88% 80%, rgba(80,50,10,0.07) 0%, transparent 65%)',
         ].join(', '),
       }} />
 
@@ -90,10 +91,10 @@ function Landing({
 
       <h1
         suppressHydrationWarning={true}
-        className="anim-fade-up font-heading text-ink text-5xl sm:text-6xl md:text-7xl font-bold leading-none tracking-tighter max-w-2xl mb-14"
-        style={{ animationDelay: '0.18s' }}
+        className="anim-fade-up font-heading text-ink font-bold leading-none tracking-tighter max-w-2xl mb-14"
+        style={{ animationDelay: '0.18s', fontSize: 'clamp(36px, 8vw, 112px)' }}
       >
-        The world is <span className="italic" style={{ color: '#7A3B10' }}>stranger</span>{' '}than you think.
+        The world is <span className="italic stranger-span" style={{ color: '#7A3B10', marginRight: '0.15em' }}>stranger</span>{' '}than you think.
       </h1>
 
       <button
@@ -106,6 +107,7 @@ function Landing({
           bg-ink text-paper-light
           px-10 py-4
           border border-ink
+          w-auto self-center
           transition-[colors,transform] duration-200
           hover:bg-ink-soft hover:border-ink-soft
           active:scale-[0.98]
@@ -161,7 +163,7 @@ function Post({
       style={{
         position: 'fixed', inset: 0,
         background: '#17100A',
-        overflowY: 'auto',
+        overflowY: 'auto', overflowX: 'hidden',
         zIndex: 10,
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(8px)',
@@ -185,10 +187,9 @@ function Post({
       }} />
 
       {/* ── Top nav ── */}
-      <nav style={{
+      <nav className="post-nav" style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '1.4rem 2rem',
         zIndex: 100,
         background: 'linear-gradient(to bottom, rgba(23,16,10,0.7) 0%, transparent 100%)',
       }}>
@@ -196,7 +197,7 @@ function Post({
           ← Get Cultured
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+        <div className="post-nav-tags" style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
           {post.pillar && (
             <span className="post-bar-tag gold">{post.pillar}</span>
           )}
@@ -237,7 +238,7 @@ function Post({
       {/* ── Caption ── */}
       <div style={{
         background: '#17100A',
-        padding: '2.8rem 2rem 5rem',
+        padding: '2.8rem clamp(1.25rem, 5vw, 2rem) 5rem',
         maxWidth: 780, margin: '0 auto', width: '100%',
       }}>
         {/* Meta row */}
@@ -267,7 +268,7 @@ function Post({
         <h1 style={{
           fontFamily: 'var(--font-playfair)',
           fontWeight: 400,
-          fontSize: 'clamp(28px, 4vw, 48px)',
+          fontSize: 'clamp(26px, 6vw, 48px)',
           lineHeight: 1.08,
           letterSpacing: '-0.01em',
           color: '#E8DCC5',
@@ -288,7 +289,7 @@ function Post({
         {/* Lede */}
         {post.lede && (
           <p style={{
-            fontSize: 'clamp(15px, 1.7vw, 19px)',
+            fontSize: 'clamp(15px, 3.5vw, 19px)',
             fontWeight: 300,
             fontStyle: 'italic',
             lineHeight: 1.6,
